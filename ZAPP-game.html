@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>⚡ ZAPP! — Save Planet Qubit</title>
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --pink:#ff2d78;--cyan:#00f5ff;--yellow:#ffe500;--green:#39ff14;
+  --orange:#ff7b00;--purple:#bf5fff;--blue:#4488ff;--red:#ff4444;
+  --dark:#07050f;--card:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.12);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);}
+body{font-family:'Nunito',sans-serif;color:#fff;
+  cursor:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><text y='22' font-size='22'>⚡</text></svg>") 10 10,auto;}
+
+/* ══ CANVAS BG ══ */
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* ══ SCREENS ══ */
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;overflow-y:auto;overflow-x:hidden;
+  padding:12px;}
+.screen.hidden{display:none!important;}
+
+/* ══ TITLE SCREEN ══ */
+#titleScreen{background:transparent;}
+.title-wrap{text-align:center;max-width:700px;width:100%;}
+.title-logo{
+  font-family:'Boogaloo',cursive;
+  font-size:clamp(4rem,15vw,9rem);
+  line-height:0.9;letter-spacing:-2px;
+  background:linear-gradient(135deg,var(--yellow),var(--pink),var(--cyan),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 40px rgba(255,229,0,0.5));
+  animation:logoPulse 2s ease-in-out infinite;
+}
+@keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 40px rgba(255,229,0,0.5));}
+  50%{filter:drop-shadow(0 0 70px rgba(0,245,255,0.7));}}
+.title-sub{font-family:'Boogaloo',cursive;font-size:clamp(1rem,3vw,1.8rem);
+  color:var(--cyan);letter-spacing:.1em;margin-top:4px;}
+.planet-spin{font-size:clamp(4rem,10vw,7rem);display:inline-block;margin:16px 0;
+  animation:planetOrbit 4s linear infinite;
+  filter:drop-shadow(0 0 20px rgba(0,245,255,0.8));}
+@keyframes planetOrbit{0%,100%{transform:rotate(-8deg) scale(1);}
+  50%{transform:rotate(8deg) scale(1.08);}}
+
+.story-box{background:rgba(0,0,0,0.5);border:2px solid rgba(0,245,255,0.25);
+  border-radius:20px;padding:18px 22px;font-size:clamp(0.85rem,2vw,1.05rem);
+  line-height:1.75;margin:12px auto;max-width:560px;text-align:left;
+  backdrop-filter:blur(10px);}
+.story-box strong{color:var(--yellow);}
+.story-box em{color:var(--pink);font-style:normal;}
+
+/* char select */
+.section-title{font-family:'Boogaloo',cursive;font-size:clamp(1.2rem,3vw,1.6rem);
+  color:var(--yellow);margin:16px 0 10px;}
+.chars{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+.char-card{background:rgba(255,255,255,0.07);border:2px solid var(--border);
+  border-radius:16px;padding:14px 16px;cursor:pointer;text-align:center;
+  min-width:100px;transition:all .2s;flex:1;max-width:140px;}
+.char-card:hover,.char-card.sel{transform:translateY(-6px);border-color:var(--yellow);
+  background:rgba(255,229,0,0.1);box-shadow:0 0 20px rgba(255,229,0,0.3);}
+.char-em{font-size:2.5rem;display:block;margin-bottom:5px;}
+.char-nm{font-weight:900;font-size:.85rem;color:var(--cyan);}
+.char-pw{font-size:.7rem;color:#aab;margin-top:2px;}
+
+.big-btn{font-family:'Boogaloo',cursive;font-size:clamp(1.2rem,3.5vw,1.8rem);
+  padding:14px 44px;border:none;border-radius:50px;cursor:pointer;
+  letter-spacing:.05em;transition:all .2s;display:inline-block;}
+.btn-start{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;
+  box-shadow:0 6px 30px rgba(255,45,120,.5);animation:startPulse 2s ease-in-out infinite;}
+@keyframes startPulse{0%,100%{box-shadow:0 6px 30px rgba(255,45,120,.5);}
+  50%{box-shadow:0 6px 40px rgba(191,95,255,.8);}}
+.btn-start:hover{transform:scale(1.07) translateY(-3px);}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),var(--green));color:var(--dark);}
+.btn-cyan:hover{transform:scale(1.05) translateY(-2px);box-shadow:0 6px 25px rgba(0,245,255,.4);}
+.btn-orange{background:linear-gradient(135deg,var(--orange),var(--yellow));color:var(--dark);}
+.btn-orange:hover{transform:scale(1.05);}
+
+/* ══ WORLD MAP ══ */
+#worldScreen{background:transparent;}
+.world-wrap{max-width:750px;width:100%;text-align:center;}
+.world-title{font-family:'Boogaloo',cursive;font-size:clamp(1.6rem,5vw,2.8rem);
+  color:var(--yellow);margin-bottom:6px;}
+.worlds-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:14px;margin:16px 0;}
+.world-card{border-radius:20px;padding:20px 14px;cursor:pointer;text-align:center;
+  border:3px solid transparent;transition:all .25s;position:relative;overflow:hidden;}
+.world-card::before{content:'';position:absolute;inset:0;opacity:0;
+  background:rgba(255,255,255,0.07);transition:opacity .2s;}
+.world-card:hover::before{opacity:1;}
+.world-card:hover{transform:translateY(-8px) scale(1.03);}
+.world-card.locked{opacity:.4;cursor:not-allowed;filter:grayscale(.8);}
+.world-card.locked:hover{transform:none;}
+.world-icon{font-size:3rem;display:block;margin-bottom:8px;}
+.world-name{font-family:'Boogaloo',cursive;font-size:1.1rem;margin-bottom:4px;}
+.world-desc{font-size:.72rem;opacity:.7;line-height:1.5;}
+.world-stars{font-size:1rem;margin-top:6px;}
+.lock-badge{position:absolute;top:8px;right:8px;font-size:1.3rem;}
+.world-diff{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 8px;border-radius:10px;display:inline-block;margin-top:6px;font-weight:800;}
+
+/* ══ LEVEL SELECT ══ */
+#levelScreen{background:transparent;}
+.level-wrap{max-width:700px;width:100%;}
+.level-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.back-btn{background:rgba(255,255,255,.08);border:1px solid var(--border);
+  border-radius:12px;padding:8px 16px;cursor:pointer;font-size:.85rem;
+  transition:all .2s;font-weight:700;}
+.back-btn:hover{background:rgba(255,255,255,.15);}
+.level-world-name{font-family:'Boogaloo',cursive;font-size:clamp(1.4rem,4vw,2rem);}
+.levels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+.level-node{border-radius:16px;padding:16px 10px;text-align:center;cursor:pointer;
+  border:2px solid rgba(255,255,255,.1);transition:all .22s;
+  background:rgba(255,255,255,.05);}
+.level-node:hover:not(.lk){transform:translateY(-5px);border-color:var(--cyan);}
+.level-node.lk{opacity:.35;cursor:not-allowed;}
+.level-node.done{border-color:var(--green);}
+.level-num{font-family:'Boogaloo',cursive;font-size:1.8rem;line-height:1;}
+.level-name{font-size:.7rem;margin-top:4px;opacity:.75;font-weight:700;}
+.level-stars{font-size:.9rem;margin-top:5px;}
+.lvl-diff-badge{font-size:.58rem;font-weight:900;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 7px;border-radius:8px;margin-top:5px;display:inline-block;}
+
+/* ══ GAME SCREEN ══ */
+#gameScreen{background:transparent;padding:0;}
+.game-wrap{width:100%;max-width:800px;height:100vh;max-height:100vh;
+  display:flex;flex-direction:column;overflow:hidden;}
+
+/* HUD */
+.hud{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.1);flex-wrap:wrap;}
+.hud-hero{font-size:1.8rem;flex-shrink:0;}
+.hud-info{flex:1;min-width:0;}
+.hud-name{font-weight:900;font-size:.85rem;color:var(--yellow);white-space:nowrap;}
+.hud-level{font-size:.65rem;opacity:.55;letter-spacing:.08em;}
+.hud-stats{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.hud-stat{text-align:center;}
+.hud-stat-v{font-family:'Boogaloo',cursive;font-size:1.1rem;line-height:1;}
+.hud-stat-l{font-size:.55rem;text-transform:uppercase;letter-spacing:.1em;opacity:.5;}
+.timer-wrap{display:flex;flex-direction:column;align-items:center;}
+.timer-ring{position:relative;width:44px;height:44px;}
+.timer-ring svg{transform:rotate(-90deg);}
+.timer-ring circle{fill:none;stroke-width:4;}
+.timer-track{stroke:rgba(255,255,255,.1);}
+.timer-fill{stroke-dasharray:113;stroke-dashoffset:0;transition:stroke-dashoffset .1s linear;}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Boogaloo',cursive;font-size:1rem;}
+
+/* Energy bar */
+.energy-bar-wrap{flex:1;min-width:80px;}
+.energy-label{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;opacity:.5;margin-bottom:3px;}
+.energy-track{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.energy-fill{height:100%;border-radius:4px;
+  background:linear-gradient(90deg,var(--cyan),var(--green));
+  box-shadow:0 0 8px rgba(57,255,20,.5);transition:width .4s cubic-bezier(.22,1,.36,1);}
+
+/* game content */
+.game-content{flex:1;overflow-y:auto;padding:14px;}
+
+/* battle scene */
+.battle-scene{position:relative;height:140px;border-radius:16px;overflow:hidden;
+  margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;}
+.battle-bg{position:absolute;inset:0;z-index:0;}
+.hero-sprite,.enemy-sprite{font-size:5rem;position:relative;z-index:1;
+  animation:spriteBob 1.5s ease-in-out infinite;}
+.hero-sprite{animation:heroWalk 1s ease-in-out infinite;}
+.enemy-sprite{animation:enemyShake 2s ease-in-out infinite;}
+@keyframes spriteBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+@keyframes heroWalk{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-10px) rotate(3deg);}}
+@keyframes enemyShake{0%,100%{transform:rotate(-5deg) scale(1);}50%{transform:rotate(5deg) scale(1.05);}}
+.vs-badge{font-family:'Boogaloo',cursive;font-size:2rem;color:#fff;
+  text-shadow:0 0 20px rgba(255,229,0,.8);z-index:1;
+  animation:vsPulse 1s ease-in-out infinite;}
+@keyframes vsPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
+.health-bar-wrap{position:absolute;bottom:10px;z-index:2;}
+.health-bar-wrap.hero-hp{left:14px;right:50%;}
+.health-bar-wrap.enemy-hp{right:14px;left:50%;}
+.hp-label{font-size:.6rem;font-weight:900;letter-spacing:.1em;margin-bottom:2px;opacity:.8;}
+.hp-track{height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;}
+.hp-fill{height:100%;border-radius:3px;transition:width .4s;}
+.hero-hp .hp-fill{background:linear-gradient(90deg,var(--green),var(--cyan));}
+.enemy-hp .hp-fill{background:linear-gradient(90deg,var(--red),var(--orange));float:right;}
+
+/* dialogue box */
+.dialogue{background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.15);
+  border-radius:16px;padding:14px 18px;margin-bottom:12px;
+  backdrop-filter:blur(8px);position:relative;}
+.dialogue-speaker{font-weight:900;font-size:.7rem;letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:7px;}
+.dialogue-text{font-size:clamp(.85rem,2vw,1rem);line-height:1.7;}
+.dialogue-text strong{font-weight:900;}
+.clue-reveal{background:rgba(191,95,255,.1);border:1px dashed rgba(191,95,255,.4);
+  border-radius:12px;padding:12px 16px;margin:10px 0;font-size:.88rem;line-height:1.65;}
+.clue-reveal::before{content:'💡 SECRET INTEL — ';font-weight:900;color:var(--purple);font-size:.7rem;letter-spacing:.1em;}
+.clue-reveal code{font-family:'JetBrains Mono',monospace;background:rgba(191,95,255,.15);
+  padding:1px 5px;border-radius:4px;color:var(--purple);font-size:.85em;}
+
+/* code block */
+.code-panel{background:rgba(0,0,0,.7);border:1px solid rgba(0,245,255,.2);
+  border-left:3px solid var(--cyan);border-radius:12px;overflow:hidden;margin:10px 0;}
+.code-top{background:rgba(0,245,255,.07);padding:7px 14px;display:flex;
+  align-items:center;gap:8px;font-size:.68rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);}
+.code-dots{display:flex;gap:5px;}
+.cdot{width:9px;height:9px;border-radius:50%;}
+.code-pre{padding:14px 16px;font-family:'JetBrains Mono',monospace;
+  font-size:clamp(.72rem,1.8vw,.83rem);line-height:1.75;color:#c8f0e8;white-space:pre-wrap;}
+.kw{color:#ff9c2a;font-weight:700;}.fn{color:#7dd3fc;}.str{color:#a3e635;}
+.cm{color:#4a6048;font-style:italic;}.num{color:#e879f9;}.op{color:#fbbf24;}
+
+/* question */
+.question-box{background:rgba(255,229,0,.07);border:2px solid rgba(255,229,0,.25);
+  border-radius:14px;padding:14px 18px;margin:10px 0;}
+.q-label{font-weight:900;font-size:.68rem;letter-spacing:.15em;color:var(--yellow);
+  text-transform:uppercase;margin-bottom:8px;}
+.q-text{font-size:clamp(.9rem,2vw,1.05rem);font-weight:700;line-height:1.6;}
+
+/* choices */
+.choices{display:grid;gap:8px;margin-top:10px;}
+.choice{background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:11px 14px;cursor:pointer;display:flex;
+  align-items:center;gap:10px;transition:all .18s;
+  font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;color:#eef;}
+.choice:hover:not(.locked-c){transform:translateX(6px);border-color:var(--cyan);}
+.c-key{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;
+  justify-content:center;font-weight:900;font-size:.75rem;color:var(--cyan);flex-shrink:0;}
+.c-text{flex:1;font-family:'JetBrains Mono',monospace;font-size:.8rem;}
+.choice.correct{border-color:var(--green)!important;background:rgba(57,255,20,.1)!important;animation:correctPop .5s ease;}
+.choice.wrong{border-color:var(--pink)!important;background:rgba(255,45,120,.1)!important;animation:wrongShake .4s ease;}
+.choice.faded{opacity:.25;pointer-events:none;}
+@keyframes correctPop{0%{transform:scale(1);}50%{transform:scale(1.04);}100%{transform:scale(1);}}
+@keyframes wrongShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+/* feedback */
+.feedback{border-radius:14px;padding:14px 18px;margin:10px 0;
+  font-size:.92rem;line-height:1.65;font-weight:700;
+  animation:feedIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes feedIn{from{transform:scale(.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+.fb-good{background:rgba(57,255,20,.1);border:2px solid rgba(57,255,20,.35);color:#d4ffcc;}
+.fb-bad{background:rgba(255,45,120,.1);border:2px solid rgba(255,45,120,.35);color:#ffd0de;}
+
+/* next button */
+.next-btn{display:none;width:100%;font-family:'Boogaloo',cursive;font-size:1.3rem;
+  padding:14px;border:none;border-radius:14px;cursor:pointer;margin-top:10px;
+  background:linear-gradient(135deg,var(--cyan),var(--green));color:var(--dark);
+  font-weight:700;box-shadow:0 4px 20px rgba(0,245,255,.3);transition:all .2s;}
+.next-btn:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,245,255,.5);}
+
+/* attack animation */
+.attack-fx{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:5rem;pointer-events:none;z-index:200;opacity:0;}
+.attack-fx.fire{animation:attackFire .6s ease forwards;}
+@keyframes attackFire{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(.3);}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.5);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(2);}
+}
+
+/* ══ RESULT SCREENS ══ */
+#victoryScreen,#gameOverScreen{background:rgba(0,0,0,.85);backdrop-filter:blur(20px);}
+.result-wrap{text-align:center;max-width:600px;width:100%;}
+.result-icon{font-size:6rem;animation:resultBounce 1s cubic-bezier(.34,1.56,.64,1) infinite alternate;}
+@keyframes resultBounce{to{transform:translateY(-20px) scale(1.08);}}
+.result-title{font-family:'Boogaloo',cursive;font-size:clamp(2rem,8vw,4rem);margin:16px 0 10px;}
+.result-story{background:rgba(255,255,255,.06);border-radius:18px;padding:18px 22px;
+  font-size:1rem;line-height:1.8;margin:0 auto 20px;max-width:500px;}
+.stars-earned{font-size:3rem;letter-spacing:8px;margin:14px 0;}
+.stat-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:14px 0;}
+.stat-blob{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;padding:14px 20px;text-align:center;min-width:90px;}
+.stat-blob-v{font-family:'Boogaloo',cursive;font-size:2rem;line-height:1;}
+.stat-blob-l{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;opacity:.55;margin-top:3px;}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;}
+
+/* ══ CONFETTI & FX ══ */
+.confetti-p{position:fixed;pointer-events:none;z-index:999;border-radius:2px;
+  animation:cFall 1.8s ease-in forwards;}
+@keyframes cFall{0%{transform:translate(0,0) rotate(0deg);opacity:1;}
+  100%{transform:translate(var(--tx),350px) rotate(720deg);opacity:0;}}
+.pop-fx{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) scale(0);
+  font-family:'Boogaloo',cursive;font-size:2.5rem;pointer-events:none;z-index:200;
+  text-shadow:0 0 30px currentColor;white-space:nowrap;}
+.pop-fx.go{animation:popGo 1.3s cubic-bezier(.34,1.56,.64,1) forwards;}
+@keyframes popGo{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:1;}
+  40%{transform:translate(-50%,-65%) scale(1.2);opacity:1;}
+  100%{transform:translate(-50%,-90%) scale(.7);opacity:0;}
+}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div id="attackFx" class="attack-fx">💥</div>
+<div id="popFx" class="pop-fx"></div>
+
+<!-- ══ TITLE ══ -->
+<div class="screen" id="titleScreen">
+  <div class="title-wrap">
+    <div class="title-logo">⚡ZAPP!⚡</div>
+    <div class="title-sub">🪐 Save Planet Qubit 🪐</div>
+    <div class="planet-spin">🪐</div>
+    <div class="story-box">
+      <strong>🚨 GALACTIC EMERGENCY!</strong> The evil robot <em>GLITCH</em> has stolen Planet Qubit's <strong>Power Core</strong> and shattered it across 4 dangerous worlds! 🌌<br><br>
+      Battle through <strong>Space Station Alpha → Neon City → The Lava Caves → GLITCH's Fortress</strong>. Each world has 5 missions — crack GLITCH's puzzles, collect Power Shards, and <strong>SAVE THE GALAXY!</strong> 🚀
+    </div>
+    <div class="section-title">👾 Choose Your Hero!</div>
+    <div class="chars" id="charSelect">
+      <div class="char-card sel" onclick="pickChar(0,this)"><span class="char-em">🧑‍🚀</span><div class="char-nm">NOVA</div><div class="char-pw">⚡ Speed Boost</div></div>
+      <div class="char-card" onclick="pickChar(1,this)"><span class="char-em">🤖</span><div class="char-nm">BOLTBOT</div><div class="char-pw">🛡 Iron Shield</div></div>
+      <div class="char-card" onclick="pickChar(2,this)"><span class="char-em">🧙‍♀️</span><div class="char-nm">ZARA</div><div class="char-pw">🔮 Magic Surge</div></div>
+      <div class="char-card" onclick="pickChar(3,this)"><span class="char-em">🦊</span><div class="char-nm">FOXBYTE</div><div class="char-pw">🖥 Hacker Mode</div></div>
+    </div>
+    <button class="big-btn btn-start" onclick="goWorldMap()">🚀 BLAST OFF!</button>
+  </div>
+</div>
+
+<!-- ══ WORLD MAP ══ -->
+<div class="screen hidden" id="worldScreen">
+  <div class="world-wrap">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;justify-content:center;">
+      <span id="wHero" style="font-size:2rem">🧑‍🚀</span>
+      <div class="world-title">⚡ ZAPP! — Choose Your World</div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:20px;margin-bottom:14px;flex-wrap:wrap;">
+      <div style="font-family:Boogaloo,cursive;font-size:1rem;color:var(--yellow)">⚡ <span id="wScore">0</span> Power</div>
+      <div style="font-family:Boogaloo,cursive;font-size:1rem;color:var(--cyan)">🏅 <span id="wStars">0</span> Stars</div>
+    </div>
+    <div class="worlds-grid" id="worldsGrid"></div>
+    <button class="big-btn btn-orange" style="margin-top:16px;font-size:1rem;padding:10px 28px;" onclick="showTitle()">← CHANGE HERO</button>
+  </div>
+</div>
+
+<!-- ══ LEVEL SELECT ══ -->
+<div class="screen hidden" id="levelScreen">
+  <div class="level-wrap">
+    <div class="level-header">
+      <button class="back-btn" onclick="goWorldMap()">← Worlds</button>
+      <div>
+        <div class="level-world-name" id="lvlWorldName"></div>
+        <div style="font-size:.75rem;opacity:.6;margin-top:2px" id="lvlWorldDesc"></div>
+      </div>
+    </div>
+    <div class="levels-grid" id="levelsGrid"></div>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div class="screen hidden" id="gameScreen">
+  <div class="game-wrap">
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-hero" id="gHero">🧑‍🚀</div>
+      <div class="hud-info">
+        <div class="hud-name" id="gName">NOVA</div>
+        <div class="hud-level" id="gLevel">World 1 · Mission 1</div>
+      </div>
+      <div class="hud-stats">
+        <div class="hud-stat"><div class="hud-stat-v" style="color:var(--yellow)" id="gScore">0</div><div class="hud-stat-l">⚡ Power</div></div>
+        <div class="hud-stat"><div class="hud-stat-v" id="gLives">❤️❤️❤️</div><div class="hud-stat-l">Lives</div></div>
+        <div class="hud-stat"><div class="hud-stat-v" style="color:var(--orange)" id="gStreak">0🔥</div><div class="hud-stat-l">Streak</div></div>
+        <div class="timer-wrap">
+          <div class="timer-ring">
+            <svg width="44" height="44"><circle class="timer-track" cx="22" cy="22" r="18"/><circle id="timerCircle" class="timer-fill" cx="22" cy="22" r="18" stroke="var(--cyan)"/></svg>
+            <div class="timer-num" id="timerNum">30</div>
+          </div>
+        </div>
+        <div class="energy-bar-wrap">
+          <div class="energy-label">Energy</div>
+          <div class="energy-track"><div class="energy-fill" id="energyFill" style="width:100%"></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- scrollable content -->
+    <div class="game-content" id="gameContent"></div>
+  </div>
+</div>
+
+<!-- ══ VICTORY ══ -->
+<div class="screen hidden" id="victoryScreen">
+  <div class="result-wrap">
+    <div class="result-icon" id="vIcon">🏆</div>
+    <div class="result-title" id="vTitle" style="color:var(--yellow)">MISSION COMPLETE!</div>
+    <div class="stars-earned" id="vStars">⭐⭐⭐</div>
+    <div class="result-story" id="vStory"></div>
+    <div class="stat-row" id="vStats"></div>
+    <div class="btn-row">
+      <button class="big-btn btn-cyan" onclick="nextLevel()">▶ NEXT MISSION</button>
+      <button class="big-btn btn-orange" style="font-size:1.1rem;padding:12px 24px;" onclick="goWorldMap()">🗺 World Map</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GAME OVER ══ -->
+<div class="screen hidden" id="gameOverScreen">
+  <div class="result-wrap">
+    <div class="result-icon">💀</div>
+    <div class="result-title" style="color:var(--pink)">ZAPPED OUT!</div>
+    <div class="result-story" id="goStory">GLITCH defeated you this time — but every hero needs practice! Try again?</div>
+    <div class="btn-row">
+      <button class="big-btn btn-start" onclick="retryLevel()">🔄 TRY AGAIN</button>
+      <button class="big-btn btn-orange" style="font-size:1.1rem;padding:12px 24px;" onclick="goWorldMap()">🗺 World Map</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// CANVAS BACKGROUND — SPACE + PARTICLES
+// ══════════════════════════════════════════════
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let W,H,stars=[],particles=[];
+
+function resizeCanvas(){
+  W=canvas.width=window.innerWidth;
+  H=canvas.height=window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+
+// stars
+for(let i=0;i<200;i++) stars.push({
+  x:Math.random()*2000,y:Math.random()*2000,
+  r:Math.random()*1.5+.3,
+  spd:Math.random()*.3+.1,
+  twinkle:Math.random()*Math.PI*2
+});
+
+// floating particles
+const pColors=['#ff2d78','#00f5ff','#ffe500','#39ff14','#bf5fff','#ff7b00'];
+for(let i=0;i<25;i++) particles.push({
+  x:Math.random()*2000,y:Math.random()*2000,
+  vx:(Math.random()-.5)*.6,vy:(Math.random()-.5)*.6,
+  r:Math.random()*3+1,
+  color:pColors[Math.floor(Math.random()*pColors.length)],
+  alpha:Math.random()*.5+.2
+});
+
+let frame=0;
+function drawBG(){
+  ctx.fillStyle='#07050f';
+  ctx.fillRect(0,0,W,H);
+  // grid
+  ctx.strokeStyle='rgba(0,245,255,0.035)';
+  ctx.lineWidth=1;
+  const gs=40;
+  for(let x=0;x<W;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // nebula
+  const neb=ctx.createRadialGradient(W*.2,H*.3,0,W*.2,H*.3,W*.4);
+  neb.addColorStop(0,'rgba(191,95,255,.08)');neb.addColorStop(1,'transparent');
+  ctx.fillStyle=neb;ctx.fillRect(0,0,W,H);
+  const neb2=ctx.createRadialGradient(W*.8,H*.7,0,W*.8,H*.7,W*.35);
+  neb2.addColorStop(0,'rgba(0,245,255,.07)');neb2.addColorStop(1,'transparent');
+  ctx.fillStyle=neb2;ctx.fillRect(0,0,W,H);
+  // stars
+  stars.forEach(s=>{
+    s.twinkle+=.02;
+    const a=.3+Math.sin(s.twinkle)*.4;
+    ctx.beginPath();ctx.arc(s.x%W,s.y%H,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fill();
+    s.y+=s.spd; if(s.y>H){s.y=0;s.x=Math.random()*W;}
+  });
+  // particles
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;
+    if(p.y<0||p.y>H)p.vy*=-1;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');
+    ctx.fill();
+  });
+  frame++;
+  requestAnimationFrame(drawBG);
+}
+drawBG();
+
+// ══════════════════════════════════════════════
+// GAME DATA
+// ══════════════════════════════════════════════
+const CHARS=[
+  {em:'🧑‍🚀',name:'NOVA',power:'Speed Boost',color:'var(--cyan)'},
+  {em:'🤖',name:'BOLTBOT',power:'Iron Shield',color:'var(--blue)'},
+  {em:'🧙‍♀️',name:'ZARA',power:'Magic Surge',color:'var(--purple)'},
+  {em:'🦊',name:'FOXBYTE',power:'Hacker Mode',color:'var(--green)'},
+];
+
+const WORLDS=[
+  {
+    id:0,name:'Space Station Alpha',icon:'🛸',
+    desc:'Beginner Zone — Learn the basics!',
+    diff:'Beginner',diffColor:'var(--green)',
+    headerBg:'linear-gradient(135deg,rgba(57,255,20,.3),rgba(0,245,255,.2))',
+    border:'var(--green)',locked:false,
+    enemy:'🤖',enemyName:'GLITCH-JR',
+    sceneBg:'linear-gradient(135deg,#0a1a2e,#0e2a1a)',
+    levels:[0,1,2,3,4]
+  },
+  {
+    id:1,name:'Neon City',icon:'🌆',
+    desc:'Intermediate — Puzzles get trickier!',
+    diff:'Intermediate',diffColor:'var(--yellow)',
+    headerBg:'linear-gradient(135deg,rgba(255,229,0,.25),rgba(255,123,0,.2))',
+    border:'var(--yellow)',locked:true,
+    enemy:'👾',enemyName:'GLITCH-X',
+    sceneBg:'linear-gradient(135deg,#1a0e2a,#2a1a0e)',
+    levels:[5,6,7,8,9]
+  },
+  {
+    id:2,name:'The Lava Caves',icon:'🌋',
+    desc:'Hard — Only the brave dare enter!',
+    diff:'Hard',diffColor:'var(--orange)',
+    headerBg:'linear-gradient(135deg,rgba(255,123,0,.3),rgba(255,45,120,.2))',
+    border:'var(--orange)',locked:true,
+    enemy:'😈',enemyName:'GLITCH-PRIME',
+    sceneBg:'linear-gradient(135deg,#2a0a0a,#1a0a00)',
+    levels:[10,11,12,13,14]
+  },
+  {
+    id:3,name:"GLITCH's Fortress",icon:'🏰',
+    desc:'BOSS WORLD — Final showdown!',
+    diff:'BOSS',diffColor:'var(--pink)',
+    headerBg:'linear-gradient(135deg,rgba(255,45,120,.3),rgba(191,95,255,.3))',
+    border:'var(--pink)',locked:true,
+    enemy:'💀',enemyName:'MEGA-GLITCH',
+    sceneBg:'linear-gradient(135deg,#1a001a,#00001a)',
+    levels:[15,16,17,18,19]
+  },
+];
+
+// All 20 missions across 4 worlds
+const MISSIONS=[
+  // ═══ WORLD 0 — Space Station Alpha (Beginner) ═══
+  {worldId:0,icon:'📦',title:'Mystery Containers',time:45,
+   enemy:'🤖',enemyHP:100,
+   glitchLine:`"Ha! I've SCRAMBLED the cargo containers! Each box only holds ONE type of thing — numbers, words, or yes/no answers. You'll NEVER sort them out!"`,
+   zappLine:`"Containers are called VARIABLES. Use <code>let</code> to make one!"`,
+   code:`<span class="kw">let</span> laserPower = <span class="num">9000</span>;  <span class="cm">← number</span>\n<span class="kw">let</span> heroName = <span class="str">"Nova"</span>; <span class="cm">← text (string)</span>\n<span class="kw">let</span> shieldsUp = <span class="kw">true</span>;  <span class="cm">← yes/no (boolean)</span>`,
+   clue:`A <code>variable</code> is a labelled box. <code>numbers</code> = counting things. <code>strings</code> = text in quotes. <code>booleans</code> = true/false. Use <code>let</code> to create one!`,
+   q:`Which correctly stores a hero's name?`,
+   choices:[
+     {k:'A',t:`let heroName = true`,c:false,w:`❌ true/false boxes only hold YES or NO!`},
+     {k:'B',t:`let heroName = "Zara"`,c:true,w:`✅ BOOM! Text goes in quotes. Variable smashed! 💥`},
+     {k:'C',t:`let heroName = 404`,c:false,w:`❌ 404 is a number — not a name!`},
+     {k:'D',t:`heroName = "Zara"`,c:false,w:`❌ Missing "let"! You need let to CREATE the box!`},
+   ]},
+  {worldId:0,icon:'🔁',title:'The Copy-Cat Trap',time:45,
+   enemy:'🤖',enemyHP:100,
+   glitchLine:`"I turned off 50 shield generators! You'd have to press the button FIFTY TIMES! Ha ha HA!"`,
+   zappLine:`"LOOPS! Like a robot arm that repeats stuff for you!"`,
+   code:`<span class="cm">// Robot arm version (LOOP)</span>\n<span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i <= <span class="num">50</span>; i++) {\n  <span class="fn">switchOn</span>(i); <span class="cm">← runs 50 times!</span>\n}`,
+   clue:`A <code>for loop</code> = robot arm. Three parts: <code>start</code>, <code>stop condition</code>, <code>step</code>. <code>i++</code> means add 1 each time.`,
+   q:`Loop through 8 satellites numbered 1 to 8. Which is correct?`,
+   choices:[
+     {k:'A',t:`for (let i=1; i<=8; i++) { ping(i); }`,c:true,w:`✅ KAPOW! 1 to 8 inclusive. All 8 satellites pinged! 📡`},
+     {k:'B',t:`for (let i=0; i<8; i++) { ping(i); }`,c:false,w:`❌ Pings 0–7. Satellite 8 escapes!`},
+     {k:'C',t:`for (let i=8; i>=1; i++) { ping(i); }`,c:false,w:`❌ i++ keeps adding FOREVER — infinite loop crash! 💥`},
+     {k:'D',t:`for (let i=1; i<8; i++) { ping(i); }`,c:false,w:`❌ i<8 stops before 8 — last satellite escapes!`},
+   ]},
+  {worldId:0,icon:'🚦',title:'The Decision Door',time:40,
+   enemy:'🤖',enemyHP:120,
+   glitchLine:`"My door has TWO rules: right pass → open. Wrong pass → ALARM! You don't have the right pass!"`,
+   zappLine:`"IF/ELSE — like a bouncer checking your ID!"`,
+   code:`<span class="kw">if</span> (pass === <span class="str">"ZAP-7"</span>) {\n  <span class="fn">openDoor</span>();  <span class="cm">← TRUE</span>\n} <span class="kw">else</span> {\n  <span class="fn">alarm</span>();     <span class="cm">← FALSE</span>\n}`,
+   clue:`<code>if</code> checks a condition. TRUE → first block runs. FALSE → <code>else</code> runs. Use <code>===</code> to compare (not =, which sets a value)!`,
+   q:`Escape pod fires ONLY if fuel > 30. Fuel is 55. Which code is correct?`,
+   choices:[
+     {k:'A',t:`if (fuel > 30) { firePod(); }`,c:true,w:`✅ ZAP! 55 > 30 is TRUE — pod fires! You escape! 🚀`},
+     {k:'B',t:`if (fuel < 30) { firePod(); }`,c:false,w:`❌ 55 < 30 is FALSE — pod won't fire! Trapped! 😱`},
+     {k:'C',t:`if (fuel = 30) { firePod(); }`,c:false,w:`❌ Single = sets a value! Use > or === to COMPARE!`},
+     {k:'D',t:`if (fuel > 30) firePod;`,c:false,w:`❌ Missing () after firePod — brackets tell it to RUN!`},
+   ]},
+  {worldId:0,icon:'🪄',title:'The Spell Saver',time:40,
+   enemy:'🤖',enemyHP:130,
+   glitchLine:`"I've booby-trapped the engine! You need the same formula every second — type it forever! BWAHAHA!"`,
+   zappLine:`"FUNCTIONS! Write a spell once, use it FOREVER!"`,
+   code:`<span class="kw">function</span> <span class="fn">repairEngine</span>(speed, damage) {\n  <span class="kw">return</span> speed * <span class="num">2</span> - damage;\n}\n\n<span class="fn">repairEngine</span>(<span class="num">10</span>, <span class="num">3</span>) <span class="cm">// → 17</span>\n<span class="fn">repairEngine</span>(<span class="num">8</span>, <span class="num">1</span>)  <span class="cm">// → 15</span>`,
+   clue:`A <code>function</code> = reusable spell. Give it a name, list the <code>inputs</code> in (), use <code>return</code> to send back the answer. Don't Repeat Yourself!`,
+   q:`Which function correctly triples any number given to it?`,
+   choices:[
+     {k:'A',t:`function triple(n) { return n * 3; }`,c:true,w:`✅ PERFECT SPELL! n × 3 returned. GLITCH's trap broken! 💥`},
+     {k:'B',t:`function triple { return n * 3; }`,c:false,w:`❌ Missing () after triple! Functions always need brackets.`},
+     {k:'C',t:`function triple(n) { n * 3; }`,c:false,w:`❌ No return! Without return, the answer goes nowhere.`},
+     {k:'D',t:`triple(n) { return n * 3; }`,c:false,w:`❌ Missing the word "function" at the start!`},
+   ]},
+  {worldId:0,icon:'📋',title:'GLITCH\'s Cargo List',time:35,
+   enemy:'🤖',enemyHP:150,
+   glitchLine:`"I scattered 100 items in random order! You'll NEVER find anything!"`,
+   zappLine:`"ARRAYS — numbered cargo containers! Everything in order with a slot number!"`,
+   code:`<span class="kw">let</span> loot = [<span class="str">"laser"</span>, <span class="str">"shield"</span>, <span class="str">"jetpack"</span>];\n\nloot[<span class="num">0</span>] <span class="cm">// "laser" ← FIRST slot = 0!</span>\nloot[<span class="num">1</span>] <span class="cm">// "shield"</span>\nloot.<span class="fn">push</span>(<span class="str">"rocket"</span>); <span class="cm">// add to end</span>`,
+   clue:`Arrays start at <code>[0]</code> not 1! First item is always slot zero. <code>.push()</code> adds to end. <code>.length</code> counts items.`,
+   q:`Cargo: ["blaster", "helmet", "boots"]. What is cargo[1]?`,
+   choices:[
+     {k:'A',t:`"blaster"`,c:false,w:`❌ "blaster" is slot [0] — arrays start at ZERO!`},
+     {k:'B',t:`"helmet"`,c:true,w:`✅ YES! Slot [1] = second item. Zero-indexing mastered! 🎒`},
+     {k:'C',t:`"boots"`,c:false,w:`❌ "boots" is slot [2] — the third slot!`},
+     {k:'D',t:`undefined`,c:false,w:`❌ undefined shows for slots that DON'T exist. Slot 1 exists!`},
+   ]},
+
+  // ═══ WORLD 1 — Neon City (Intermediate) ═══
+  {worldId:1,icon:'🗃️',title:'Identity Files Stolen',time:35,
+   enemy:'👾',enemyHP:150,
+   glitchLine:`"I deleted ALL the hero identity files! No names, no levels, NOTHING!"`,
+   zappLine:`"OBJECTS — like a player profile card. Many facts about ONE thing!"`,
+   code:`<span class="kw">let</span> nova = {\n  name: <span class="str">"Nova"</span>,\n  level: <span class="num">42</span>,\n  power: <span class="str">"Speed"</span>\n};\nnova.name  <span class="cm">// "Nova"</span>\nnova[<span class="str">"level"</span>] <span class="cm">// 42</span>`,
+   clue:`<code>Objects</code> store many facts about one thing. Use a <code>dot</code> to read: <code>obj.key</code>. Or brackets: <code>obj["key"]</code>. Keys are labels, values are the data.`,
+   q:`How do you read the level from: let hero = { name: "Zara", level: 99 }?`,
+   choices:[
+     {k:'A',t:`hero.level`,c:true,w:`✅ DOT POWER! hero.level = 99. File recovered! 🗃️`},
+     {k:'B',t:`hero[level]`,c:false,w:`❌ Bracket notation needs QUOTES: hero["level"]!`},
+     {k:'C',t:`hero(level)`,c:false,w:`❌ () are for calling FUNCTIONS — not reading properties!`},
+     {k:'D',t:`level.hero`,c:false,w:`❌ Object name comes FIRST: hero.level, not level.hero!`},
+   ]},
+  {worldId:1,icon:'🔄',title:'The While Wheel',time:35,
+   enemy:'👾',enemyHP:160,
+   glitchLine:`"My spinning turbine runs FOREVER! How do you stop something when you don't know how many steps it takes?!"`,
+   zappLine:`"WHILE LOOP — keeps going while a condition is true. Different from for!"`,
+   code:`<span class="kw">let</span> power = <span class="num">100</span>;\n\n<span class="kw">while</span> (power > <span class="num">0</span>) {\n  power -= <span class="num">10</span>;  <span class="cm">← drain 10 each time</span>\n}\n<span class="cm">// Stops when power reaches 0</span>`,
+   clue:`A <code>while</code> loop keeps going while the condition stays TRUE. Unlike <code>for</code>, it doesn't have a built-in counter — you update the condition inside!`,
+   q:`Which while loop counts down from 5 to 1 correctly?`,
+   choices:[
+     {k:'A',t:`let n=5; while(n>0){console.log(n); n--;}`,c:true,w:`✅ PERFECT! Logs 5,4,3,2,1 then stops when n hits 0! 🔄`},
+     {k:'B',t:`let n=5; while(n>0){console.log(n);}`,c:false,w:`❌ n never changes — INFINITE LOOP! The turbine explodes! 💥`},
+     {k:'C',t:`let n=5; while(n<0){console.log(n); n--;}`,c:false,w:`❌ 5 < 0 is already FALSE — loop never runs at all!`},
+     {k:'D',t:`let n=5; while(n>=0){console.log(n); n--;}`,c:false,w:`❌ Logs 5,4,3,2,1,0 — includes 0 which isn't "1 to 5"!`},
+   ]},
+  {worldId:1,icon:'🏹',title:'Arrow Spell Upgrade',time:30,
+   enemy:'👾',enemyHP:170,
+   glitchLine:`"My robots use OLD broken code! But you still need to write CLEAN modern spells!"`,
+   zappLine:`"Arrow functions — shorter, modern way to write functions!"`,
+   code:`<span class="cm">// Old style function</span>\n<span class="kw">function</span> <span class="fn">add</span>(a, b) { <span class="kw">return</span> a + b; }\n\n<span class="cm">// Arrow function — same thing, shorter!</span>\n<span class="kw">const</span> add = (a, b) => a + b;\n\n<span class="fn">add</span>(<span class="num">3</span>, <span class="num">4</span>) <span class="cm">// → 7</span>`,
+   clue:`Arrow functions use <code>=></code> instead of the word "function". If there's one line, you don't even need curly braces or return! Use <code>const</code> to store them.`,
+   q:`Which arrow function correctly doubles a number?`,
+   choices:[
+     {k:'A',t:`const double = n => n * 2;`,c:true,w:`✅ SLEEK! One parameter, no brackets needed. Arrow function mastered! 🏹`},
+     {k:'B',t:`const double = n => { n * 2 };`,c:false,w:`❌ With curly braces you NEED the return keyword!`},
+     {k:'C',t:`const double => n * 2;`,c:false,w:`❌ Missing the = before =>! Should be: const double = n => ...`},
+     {k:'D',t:`function double = n => n * 2;`,c:false,w:`❌ Don't mix "function" keyword with arrow syntax!`},
+   ]},
+  {worldId:1,icon:'🗺️',title:'Array Quest',time:30,
+   enemy:'👾',enemyHP:180,
+   glitchLine:`"I've SCRAMBLED the map! You need to transform every location — but there are hundreds!"`,
+   zappLine:`"Array MAP method — transform every item in one line!"`,
+   code:`<span class="kw">let</span> nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>];\n\n<span class="cm">// Double every number</span>\n<span class="kw">let</span> doubled = nums.<span class="fn">map</span>(n => n * <span class="num">2</span>);\n<span class="cm">// doubled = [2, 4, 6, 8]</span>\n\n<span class="cm">// Filter only big numbers</span>\n<span class="kw">let</span> big = nums.<span class="fn">filter</span>(n => n > <span class="num">2</span>);\n<span class="cm">// big = [3, 4]</span>`,
+   clue:`<code>.map()</code> transforms every item and returns a NEW array. <code>.filter()</code> keeps only items where the condition is TRUE. Both use arrow functions inside!`,
+   q:`What does [1,2,3].map(n => n + 10) return?`,
+   choices:[
+     {k:'A',t:`[11, 12, 13]`,c:true,w:`✅ BULLSEYE! Adds 10 to each item. Map mastered! 🗺️`},
+     {k:'B',t:`[10, 20, 30]`,c:false,w:`❌ That would be map(n => n * 10) — multiplication, not addition!`},
+     {k:'C',t:`[1, 2, 3]`,c:false,w:`❌ Map creates a NEW array — the original stays unchanged, but the RESULT has the changes!`},
+     {k:'D',t:`36`,c:false,w:`❌ 36 would be the result of .reduce() adding everything up — not .map()!`},
+   ]},
+  {worldId:1,icon:'🏙️',title:'Neon City Boss',time:25,
+   enemy:'👾',enemyHP:200,
+   glitchLine:`"ENOUGH GAMES! My final Neon City trap: find the first villain in my list with more than 50 power! HA — if you even know what a function IS!"`,
+   zappLine:`"Combine functions + loops + if + arrays. BOSS COMBO TIME!"`,
+   code:`<span class="kw">function</span> <span class="fn">findVillain</span>(villains) {\n  <span class="kw">for</span> (<span class="kw">let</span> i=<span class="num">0</span>; i<villains.length; i++) {\n    <span class="kw">if</span> (villains[i].power > <span class="num">50</span>) {\n      <span class="kw">return</span> villains[i]; <span class="cm">← first match!</span>\n    }\n  }\n  <span class="kw">return</span> <span class="kw">null</span>; <span class="cm">← none found</span>\n}`,
+   clue:`This combines <code>function</code>, <code>for loop</code>, <code>if statement</code>, and <code>array</code> — the boss combo! The loop checks each item, if matches returns it, if nothing matches returns null.`,
+   q:`villains[0].power=30, villains[1].power=70, villains[2].power=90. What does findVillain return?`,
+   choices:[
+     {k:'A',t:`villains[0] (power 30)`,c:false,w:`❌ 30 > 50 is FALSE — skipped!`},
+     {k:'B',t:`villains[1] (power 70)`,c:true,w:`✅ BOSS DEFEATED! 70>50, first match returned immediately! 💥🎉`},
+     {k:'C',t:`villains[2] (power 90)`,c:false,w:`❌ Loop found [1] first and returned — never reached [2]!`},
+     {k:'D',t:`null`,c:false,w:`❌ null only if NOTHING matched — villains[1] matches!`},
+   ]},
+
+  // ═══ WORLD 2 — Lava Caves (Hard) ═══
+  {worldId:2,icon:'🌀',title:'Mirror Maze (Recursion)',time:25,
+   enemy:'😈',enemyHP:200,
+   glitchLine:`"WELCOME to infinite mirrors! Every corridor leads to itself! You're TRAPPED forever!"`,
+   zappLine:`"Recursion — a spell that calls ITSELF! But it needs a STOP rule!"`,
+   code:`<span class="kw">function</span> <span class="fn">factorial</span>(n) {\n  <span class="kw">if</span> (n <= <span class="num">1</span>) <span class="kw">return</span> <span class="num">1</span>; <span class="cm">← STOP RULE</span>\n  <span class="kw">return</span> n * <span class="fn">factorial</span>(n-<span class="num">1</span>); <span class="cm">← calls itself</span>\n}\n<span class="fn">factorial</span>(<span class="num">4</span>) <span class="cm">// 4×3×2×1 = 24</span>`,
+   clue:`<code>Recursion</code> = function calling itself. MUST have a <code>base case</code> (stop rule) or it crashes forever. Each call solves a smaller version of the problem.`,
+   q:`What does factorial(3) return?`,
+   choices:[
+     {k:'A',t:`3`,c:false,w:`❌ factorial(3) = 3 × factorial(2) = 3 × 2 × 1 = 6!`},
+     {k:'B',t:`6`,c:true,w:`✅ YES! 3 × 2 × 1 = 6. Recursion cracked! 🌀`},
+     {k:'C',t:`9`,c:false,w:`❌ 9 = 3². Factorial multiplies DESCENDING: 3×2×1!`},
+     {k:'D',t:`Infinite loop`,c:false,w:`❌ The base case (n<=1 return 1) prevents infinite recursion!`},
+   ]},
+  {worldId:2,icon:'📦',title:'Object Destructuring',time:25,
+   enemy:'😈',enemyHP:210,
+   glitchLine:`"My lava bots have ENCRYPTED their profiles! You'll never unpack the data quickly enough!"`,
+   zappLine:`"Destructuring — unpack multiple values from an object in ONE line!"`,
+   code:`<span class="kw">let</span> bot = { name:<span class="str">"Lava-X"</span>, hp:<span class="num">500</span>, type:<span class="str">"fire"</span> };\n\n<span class="cm">// Old way — 3 lines</span>\n<span class="kw">let</span> name = bot.name;\n<span class="kw">let</span> hp   = bot.hp;\n\n<span class="cm">// Destructuring — 1 line! ✨</span>\n<span class="kw">const</span> { name, hp, type } = bot;`,
+   clue:`<code>Destructuring</code> unpacks object properties into variables in one line. The variable names must MATCH the object keys. Works with arrays too: <code>const [a,b] = [1,2]</code>`,
+   q:`After: const { x, y } = { x:10, y:20, z:30 }, what is y?`,
+   choices:[
+     {k:'A',t:`10`,c:false,w:`❌ x is 10. y is the SECOND property!`},
+     {k:'B',t:`20`,c:true,w:`✅ UNPACKED! y matches the y key which holds 20! 📦`},
+     {k:'C',t:`30`,c:false,w:`❌ 30 is z, which wasn't destructured!`},
+     {k:'D',t:`undefined`,c:false,w:`❌ y exists in the object so it's destructured correctly!`},
+   ]},
+  {worldId:2,icon:'⏳',title:'The Promise Chamber',time:25,
+   enemy:'😈',enemyHP:220,
+   glitchLine:`"TIME is my weapon! Some things take time to load — can your code WAIT for results?"`,
+   zappLine:`"Async/Await — lets code WAIT for slow things without freezing everything!"`,
+   code:`<span class="cm">// WITHOUT async — runs immediately, no wait</span>\n<span class="kw">function</span> <span class="fn">getShield</span>() { <span class="cm">/* can't wait! */</span> }\n\n<span class="cm">// WITH async/await — waits patiently</span>\n<span class="kw">async function</span> <span class="fn">getShield</span>() {\n  <span class="kw">const</span> shield = <span class="kw">await</span> <span class="fn">fetchFromServer</span>();\n  <span class="kw">return</span> shield; <span class="cm">← now it has the data!</span>\n}`,
+   clue:`<code>async</code> marks a function that will wait. <code>await</code> pauses ONLY that function while the slow thing runs — the rest of the game keeps going! Used for loading data from servers.`,
+   q:`What does "await" do inside an async function?`,
+   choices:[
+     {k:'A',t:`Pauses the whole game`,c:false,w:`❌ Only pauses THAT function — everything else keeps running!`},
+     {k:'B',t:`Waits for a slow task to finish`,c:true,w:`✅ EXACTLY! await waits for the promise to resolve before continuing! ⏳`},
+     {k:'C',t:`Makes code run faster`,c:false,w:`❌ Await adds a wait — it's about CORRECTNESS, not speed!`},
+     {k:'D',t:`Loops until done`,c:false,w:`❌ Await doesn't loop — it pauses once and continues when ready!`},
+   ]},
+  {worldId:2,icon:'🔒',title:'Error Dungeon',time:20,
+   enemy:'😈',enemyHP:230,
+   glitchLine:`"My lava traps CRASH your code! When something breaks — your whole program DIES! HAHAHA!"`,
+   zappLine:`"Try/Catch — catch errors before they destroy you!"`,
+   code:`<span class="cm">// WITHOUT try/catch — crashes on error</span>\n<span class="kw">let</span> result = dangerousOp(); <span class="cm">// 💥 BOOM</span>\n\n<span class="cm">// WITH try/catch — survives!</span>\n<span class="kw">try</span> {\n  <span class="kw">let</span> result = <span class="fn">dangerousOp</span>();\n} <span class="kw">catch</span>(error) {\n  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Oops:"</span>, error); <span class="cm">← safe!</span>\n}`,
+   clue:`<code>try</code> runs risky code. If it FAILS, execution jumps to <code>catch</code> with the error. Your program keeps running instead of crashing! Always use try/catch when loading data.`,
+   q:`If the code in "try" throws an error, what happens?`,
+   choices:[
+     {k:'A',t:`The whole program crashes`,c:false,w:`❌ That's without try/catch! WITH it, catch handles the error!`},
+     {k:'B',t:`The catch block runs`,c:true,w:`✅ SAFE! Catch handles the error and life goes on! 🔒`},
+     {k:'C',t:`The try block retries`,c:false,w:`❌ try doesn't auto-retry — you'd write that logic yourself!`},
+     {k:'D',t:`Nothing happens`,c:false,w:`❌ The error is caught and the catch block executes!`},
+   ]},
+  {worldId:2,icon:'🌋',title:'Lava Boss Fight',time:20,
+   enemy:'😈',enemyHP:300,
+   glitchLine:`"LAST LAVA CHALLENGE! What's the difference between == and ===? Get it wrong and FALL INTO THE LAVA!"`,
+   zappLine:`"Strict vs loose equality — a trap that catches even experienced coders!"`,
+   code:`<span class="cm">// == loose — converts types before comparing</span>\n<span class="num">5</span>  ==  <span class="str">"5"</span>  <span class="cm">// TRUE  (converts string to number)</span>\n<span class="num">0</span>  ==  <span class="kw">false</span> <span class="cm">// TRUE  (converts false to 0)</span>\n\n<span class="cm">// === strict — type AND value must match</span>\n<span class="num">5</span>  === <span class="str">"5"</span>  <span class="cm">// FALSE (different types!)</span>\n<span class="num">5</span>  === <span class="num">5</span>    <span class="cm">// TRUE</span>`,
+   clue:`<code>==</code> converts types first (loose). <code>===</code> requires SAME type AND same value (strict). ALWAYS use <code>===</code> in your code to avoid sneaky bugs!`,
+   q:`What does 0 === false evaluate to?`,
+   choices:[
+     {k:'A',t:`true`,c:false,w:`❌ That's 0 == false (loose). Strict === requires same TYPE!`},
+     {k:'B',t:`false`,c:true,w:`✅ LAVA SURVIVED! 0 is a number, false is a boolean — different types! === returns false! 🌋`},
+     {k:'C',t:`undefined`,c:false,w:`❌ The comparison runs fine — returns false because types differ!`},
+     {k:'D',t:`error`,c:false,w:`❌ No error — comparing different types with === just returns false!`},
+   ]},
+
+  // ═══ WORLD 3 — GLITCH's Fortress (Boss) ═══
+  {worldId:3,icon:'🏰',title:'The Fortress Gates',time:20,
+   enemy:'💀',enemyHP:300,
+   glitchLine:`"WELCOME to my FORTRESS! Here's a trick that breaks most coders — closures! Variables trapped inside functions!"`,
+   zappLine:`"Closures — functions that remember variables from when they were born!"`,
+   code:`<span class="kw">function</span> <span class="fn">makeCounter</span>() {\n  <span class="kw">let</span> count = <span class="num">0</span>; <span class="cm">← lives in here</span>\n  <span class="kw">return</span> <span class="kw">function</span>() {\n    count++;\n    <span class="kw">return</span> count; <span class="cm">← remembers count!</span>\n  };\n}\n<span class="kw">const</span> counter = <span class="fn">makeCounter</span>();\n<span class="fn">counter</span>() <span class="cm">// 1</span>\n<span class="fn">counter</span>() <span class="cm">// 2</span>`,
+   clue:`A <code>closure</code> is an inner function that REMEMBERS variables from its outer function — even after the outer function has finished running. Like a backpack of memories!`,
+   q:`After calling counter() twice (from makeCounter), what does the third call return?`,
+   choices:[
+     {k:'A',t:`1`,c:false,w:`❌ 1 was the FIRST call. The closure remembers and keeps counting!`},
+     {k:'B',t:`0`,c:false,w:`❌ count starts at 0 but increments each call. Never returns 0!`},
+     {k:'C',t:`3`,c:true,w:`✅ GATE OPEN! Closure remembers count=2, adds 1 → returns 3! 🏰`},
+     {k:'D',t:`undefined`,c:false,w:`❌ The closure returns count which is a real number!`},
+   ]},
+  {worldId:3,icon:'⚡',title:'Prototype Power',time:20,
+   enemy:'💀',enemyHP:320,
+   glitchLine:`"My robots share POWERS through a special chain! Classes and inheritance — do you even know what a constructor is?!"`,
+   zappLine:`"Classes — like blueprints for building robot armies!"`,
+   code:`<span class="kw">class</span> <span class="cls">Robot</span> {\n  <span class="fn">constructor</span>(name, hp) {\n    <span class="kw">this</span>.name = name;\n    <span class="kw">this</span>.hp   = hp;\n  }\n  <span class="fn">attack</span>() {\n    <span class="kw">return</span> <span class="str">\`\${this.name} ATTACKS!\`</span>;\n  }\n}\n<span class="kw">const</span> r = <span class="kw">new</span> <span class="cls">Robot</span>(<span class="str">"Bolt"</span>,<span class="num">100</span>);`,
+   clue:`A <code>class</code> is a blueprint. The <code>constructor</code> sets up properties when you create a new one with <code>new</code>. Methods are shared functions. <code>this</code> refers to the current instance.`,
+   q:`After: const r = new Robot("Bolt", 100) — what does r.attack() return?`,
+   choices:[
+     {k:'A',t:`"Robot ATTACKS!"`,c:false,w:`❌ It uses this.name which is "Bolt" — not the class name!`},
+     {k:'B',t:`"Bolt ATTACKS!"`,c:true,w:`✅ SMASHED! this.name = "Bolt" from the constructor! ⚡`},
+     {k:'C',t:`undefined`,c:false,w:`❌ attack() returns a template string — not undefined!`},
+     {k:'D',t:`error`,c:false,w:`❌ The class and method are set up correctly — no error!`},
+   ]},
+  {worldId:3,icon:'🌐',title:'Data Intercepted',time:18,
+   enemy:'💀',enemyHP:340,
+   glitchLine:`"I've blocked all data transmissions! You'll need to SPREAD and MERGE data to get through my firewall!"`,
+   zappLine:`"Spread operator (...) — copy and combine arrays or objects!"`,
+   code:`<span class="kw">let</span> a = [<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>];\n<span class="kw">let</span> b = [<span class="num">4</span>,<span class="num">5</span>];\n\n<span class="cm">// Spread merges them</span>\n<span class="kw">let</span> merged = [...a, ...b];\n<span class="cm">// [1, 2, 3, 4, 5]</span>\n\n<span class="cm">// Works with objects too</span>\n<span class="kw">let</span> hero = {...stats, name:<span class="str">"Nova"</span>};`,
+   clue:`The <code>spread operator (...)</code> expands an array or object's contents. Use it to copy, merge, or add new items without modifying the original. Super useful for clean code!`,
+   q:`What does [...[1,2], ...[3,4]] produce?`,
+   choices:[
+     {k:'A',t:`[[1,2],[3,4]]`,c:false,w:`❌ That would be [[1,2],[3,4]] without spread. Spread UNPACKS them!`},
+     {k:'B',t:`[1,2,3,4]`,c:true,w:`✅ FIREWALL DOWN! Spread unpacks both arrays into one! 🌐`},
+     {k:'C',t:`[1,2],[3,4]`,c:false,w:`❌ That's two separate arrays — spread merges into ONE!`},
+     {k:'D',t:`error`,c:false,w:`❌ Spread syntax is valid inside array brackets!`},
+   ]},
+  {worldId:3,icon:'🧬',title:'The Clone Algorithm',time:15,
+   enemy:'💀',enemyHP:360,
+   glitchLine:`"ALMOST AT MY CORE! Here's my trickiest trap — when you copy objects, changes can SURPRISE you!"`,
+   zappLine:`"Reference vs Value — THE most important concept for bug-free code!"`,
+   code:`<span class="cm">// Primitives copy the VALUE</span>\n<span class="kw">let</span> a = <span class="num">5</span>; <span class="kw">let</span> b = a; b = <span class="num">99</span>;\na; <span class="cm">// still 5 ✅</span>\n\n<span class="cm">// Objects copy the REFERENCE</span>\n<span class="kw">let</span> x = {hp:<span class="num">100</span>}; <span class="kw">let</span> y = x;\ny.hp = <span class="num">0</span>;\nx.hp; <span class="cm">// 0 ← BOTH changed! ⚠️</span>`,
+   clue:`Numbers/strings are copied by <code>VALUE</code> (independent copy). Objects/arrays are copied by <code>REFERENCE</code> (both point to the SAME data). To truly clone an object, use <code>{...original}</code>!`,
+   q:`let obj={hp:100}; let copy=obj; copy.hp=0; What is obj.hp?`,
+   choices:[
+     {k:'A',t:`100`,c:false,w:`❌ copy and obj point to the SAME object! Changing copy changes obj too!`},
+     {k:'B',t:`0`,c:true,w:`✅ CLONE CRACKED! Both variables reference the SAME object in memory! 🧬`},
+     {k:'C',t:`undefined`,c:false,w:`❌ hp was set to 0 — it exists, it's just 0!`},
+     {k:'D',t:`error`,c:false,w:`❌ No error — objects are mutable in JavaScript!`},
+   ]},
+  {worldId:3,icon:'💥',title:'⚡ MEGA-GLITCH FINAL BOSS',time:15,
+   enemy:'💀',enemyHP:500,
+   glitchLine:`"IMPOSSIBLE!! You've reached my CORE! One final riddle — the hardest of ALL! Get this wrong and the galaxy is MINE FOREVER!"`,
+   zappLine:`"EVERYTHING COMBINED! Function + async + array + error handling. UNLEASH THE BOSS COMBO!"`,
+   code:`<span class="kw">async function</span> <span class="fn">savePlanet</span>(shards) {\n  <span class="kw">try</span> {\n    <span class="kw">const</span> powered = shards\n      .<span class="fn">filter</span>(s => s.active)\n      .<span class="fn">map</span>(s => ({...s, energy: s.energy*<span class="num">2</span>}));\n    <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">activateCore</span>(powered);\n    <span class="kw">return</span> result;\n  } <span class="kw">catch</span>(e) { <span class="kw">return</span> <span class="kw">null</span>; }\n}`,
+   clue:`This BOSS COMBO uses: <code>async/await</code> for waiting, <code>filter</code> to select, <code>map+spread</code> to transform, <code>try/catch</code> for safety. Real production code looks exactly like this!`,
+   q:`If activateCore() throws an error, what does savePlanet() return?`,
+   choices:[
+     {k:'A',t:`The powered array`,c:false,w:`❌ The error happens during activateCore — after the array is made!`},
+     {k:'B',t:`It crashes`,c:false,w:`❌ try/catch CATCHES the error — no crash!`},
+     {k:'C',t:`null`,c:true,w:`✅ 🏆 MEGA-GLITCH DESTROYED! catch(e) returns null safely! PLANET QUBIT IS SAVED!! 💥🎉🪐`},
+     {k:'D',t:`undefined`,c:false,w:`❌ catch explicitly returns null — not undefined!`},
+   ]},
+];
+
+// ══════════════════════════════════════════════
+// GAME STATE
+// ══════════════════════════════════════════════
+let G={
+  charIdx:0,
+  worldProgress:[0,0,0,0], // levels completed per world
+  starsPerLevel:{},
+  totalScore:0,
+  totalStars:0,
+  currentWorldId:0,
+  currentMissionIdx:0,
+  // session
+  lives:3,streak:0,score:0,answered:false,
+  timerVal:30,timerInterval:null,
+  heroHP:100,enemyHP:100,
+  bestStreak:0,
+};
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+function showTitle(){showScreen('titleScreen');}
+
+function pickChar(i,el){
+  G.charIdx=i;
+  document.querySelectorAll('.char-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function goWorldMap(){
+  stopTimer();
+  showScreen('worldScreen');
+  document.getElementById('wHero').textContent=CHARS[G.charIdx].em;
+  document.getElementById('wScore').textContent=G.totalScore;
+  document.getElementById('wStars').textContent=G.totalStars;
+  renderWorldMap();
+}
+
+function renderWorldMap(){
+  const grid=document.getElementById('worldsGrid');
+  grid.innerHTML='';
+  // unlock worlds based on progress
+  if(G.worldProgress[0]>=5) WORLDS[1].locked=false;
+  if(G.worldProgress[1]>=5) WORLDS[2].locked=false;
+  if(G.worldProgress[2]>=5) WORLDS[3].locked=false;
+
+  WORLDS.forEach(w=>{
+    const completed=G.worldProgress[w.id];
+    const stars=w.levels.reduce((a,li)=>a+(G.starsPerLevel[li]||0),0);
+    const maxStars=w.levels.length*3;
+    const d=document.createElement('div');
+    d.className='world-card'+(w.locked?' locked':'');
+    d.style.cssText=`background:${w.headerBg};border-color:${w.border};`;
+    d.innerHTML=`
+      ${w.locked?'<div class="lock-badge">🔒</div>':''}
+      <div class="world-icon">${w.icon}</div>
+      <div class="world-name">${w.name}</div>
+      <div class="world-desc">${w.desc}</div>
+      <div class="world-stars">${'⭐'.repeat(Math.min(stars,5))}${'☆'.repeat(Math.max(0,5-Math.min(stars,5)))}</div>
+      <div class="world-diff" style="background:rgba(0,0,0,.3);color:${w.diffColor}">${w.diff}</div>
+      <div style="font-size:.7rem;margin-top:6px;opacity:.6">${completed}/5 Missions</div>`;
+    if(!w.locked) d.onclick=()=>goLevelSelect(w.id);
+    grid.appendChild(d);
+  });
+}
+
+function goLevelSelect(worldId){
+  G.currentWorldId=worldId;
+  const w=WORLDS[worldId];
+  showScreen('levelScreen');
+  document.getElementById('lvlWorldName').textContent=w.icon+' '+w.name;
+  document.getElementById('lvlWorldDesc').textContent=w.desc;
+  const grid=document.getElementById('levelsGrid');
+  grid.innerHTML='';
+  const diffLabels=['Starter','Easy','Medium','Tricky','Boss!'];
+  const diffColors=['var(--green)','var(--cyan)','var(--yellow)','var(--orange)','var(--pink)'];
+  w.levels.forEach((mIdx,i)=>{
+    const locked=i>0 && (G.starsPerLevel[w.levels[i-1]]||0)<1;
+    const stars=G.starsPerLevel[mIdx]||0;
+    const m=MISSIONS[mIdx];
+    const d=document.createElement('div');
+    d.className='level-node'+(locked?' lk':'')+(stars>0?' done':'');
+    d.innerHTML=`
+      <div class="level-num" style="color:${diffColors[i]}">${i+1}</div>
+      <div class="level-name">${m.title}</div>
+      <div class="level-stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+      <div class="lvl-diff-badge" style="background:rgba(0,0,0,.4);color:${diffColors[i]}">${diffLabels[i]}</div>`;
+    if(!locked) d.onclick=()=>startMission(mIdx);
+    grid.appendChild(d);
+  });
+}
+
+// ══════════════════════════════════════════════
+// GAME PLAY
+// ══════════════════════════════════════════════
+function startMission(missionIdx){
+  G.currentMissionIdx=missionIdx;
+  G.lives=3; G.streak=0; G.score=0; G.answered=false; G.bestStreak=0;
+  G.heroHP=100; G.enemyHP=100;
+  showScreen('gameScreen');
+  const ch=CHARS[G.charIdx];
+  const w=WORLDS[G.currentWorldId];
+  const m=MISSIONS[missionIdx];
+  document.getElementById('gHero').textContent=ch.em;
+  document.getElementById('gName').textContent=ch.name;
+  document.getElementById('gLevel').textContent=`${w.name} · Mission ${(missionIdx%5)+1}`;
+  renderMission(m);
+}
+
+function renderMission(m){
+  G.answered=false;
+  updateHUD();
+  const ch=CHARS[G.charIdx];
+  const w=WORLDS[G.currentWorldId];
+  const content=document.getElementById('gameContent');
+
+  content.innerHTML=`
+    <div class="battle-scene">
+      <div class="battle-bg" style="background:${w.sceneBg}"></div>
+      <div>
+        <div class="hero-sprite">${ch.em}</div>
+        <div style="text-align:center;font-size:.65rem;margin-top:4px;font-weight:900;color:${ch.color}">${ch.name}</div>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div>
+        <div class="enemy-sprite">${m.enemy}</div>
+        <div style="text-align:center;font-size:.65rem;margin-top:4px;font-weight:900;color:var(--pink)">${m.enemy} GLITCH</div>
+      </div>
+      <div class="health-bar-wrap hero-hp">
+        <div class="hp-label" style="color:var(--green)">▲ HERO HP</div>
+        <div class="hp-track"><div class="hp-fill" id="heroHPBar" style="width:${G.heroHP}%"></div></div>
+      </div>
+      <div class="health-bar-wrap enemy-hp">
+        <div class="hp-label" style="color:var(--red);text-align:right">GLITCH HP ▲</div>
+        <div class="hp-track"><div class="hp-fill" id="enemyHPBar" style="width:${G.enemyHP}%"></div></div>
+      </div>
+    </div>
+
+    <div class="dialogue">
+      <div class="dialogue-speaker" style="color:var(--pink)">💬 GLITCH TAUNTS:</div>
+      <div class="dialogue-text">${m.glitchLine}</div>
+    </div>
+    <div class="dialogue" style="border-color:rgba(57,255,20,.2);background:rgba(57,255,20,.04)">
+      <div class="dialogue-speaker" style="color:var(--green)">⚡ ZAPP'S SECRET INTEL:</div>
+      <div class="dialogue-text">${m.zappLine}</div>
+    </div>
+
+    <div class="code-panel">
+      <div class="code-top">
+        <div class="code-dots"><div class="cdot" style="background:#ff5f57"></div><div class="cdot" style="background:#febc2e"></div><div class="cdot" style="background:#28c840"></div></div>
+        📟 GLITCH'S CODE — STUDY IT!
+      </div>
+      <div class="code-pre">${m.code}</div>
+    </div>
+
+    <div class="clue-reveal">${m.clue}</div>
+
+    <div class="question-box">
+      <div class="q-label">🎯 CRACK THE PUZZLE — ATTACK GLITCH!</div>
+      <div class="q-text">${m.q}</div>
+    </div>
+    <div class="choices" id="choices">
+      ${m.choices.map((c,i)=>`
+        <div class="choice" id="c${i}" onclick="answer(${i})">
+          <div class="c-key">${c.k}</div>
+          <div class="c-text">${esc(c.t)}</div>
+        </div>`).join('')}
+    </div>
+    <div id="feedback"></div>
+    <button class="next-btn" id="nextBtn" onclick="missionComplete()"></button>
+  `;
+
+  startTimer(m.time);
+  content.scrollTo(0,0);
+}
+
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ══ TIMER ══
+function startTimer(sec){
+  stopTimer();
+  G.timerVal=sec;
+  updateTimer();
+  G.timerInterval=setInterval(()=>{
+    G.timerVal--;
+    updateTimer();
+    if(G.timerVal<=0){stopTimer();timeUp();}
+  },1000);
+}
+function stopTimer(){clearInterval(G.timerInterval);G.timerInterval=null;}
+function updateTimer(){
+  const el=document.getElementById('timerNum');
+  const circ=document.getElementById('timerCircle');
+  const m=MISSIONS[G.currentMissionIdx];
+  if(!el||!circ) return;
+  el.textContent=G.timerVal;
+  const pct=G.timerVal/m.time;
+  const circ_c=2*Math.PI*18;
+  circ.style.strokeDashoffset=circ_c*(1-pct);
+  const col=pct>0.5?'var(--cyan)':pct>0.25?'var(--yellow)':'var(--pink)';
+  circ.style.stroke=col;
+  el.style.color=col;
+}
+function timeUp(){
+  if(G.answered) return;
+  G.answered=true;
+  G.lives=Math.max(0,G.lives-1);
+  G.streak=0;
+  takeDamage('hero',30);
+  showFeedback(false,'⏰ TIME\'S UP! GLITCH zapped you while you thought! -1 life!');
+  document.getElementById('nextBtn').textContent='😤 TRY NEXT QUESTION';
+  document.getElementById('nextBtn').style.display='block';
+  updateHUD();
+  if(G.lives<=0) setTimeout(()=>showGameOver(),1500);
+}
+
+// ══ ANSWER ══
+function answer(idx){
+  if(G.answered) return;
+  G.answered=true;
+  stopTimer();
+  const m=MISSIONS[G.currentMissionIdx];
+  const ch=m.choices[idx];
+  m.choices.forEach((_,i)=>{if(i!==idx)document.getElementById(`c${i}`).classList.add('faded');});
+  const btn=document.getElementById(`c${idx}`);
+
+  if(ch.c){
+    btn.classList.add('correct');
+    const bonus=G.streak>=2?G.streak*5:0;
+    const gained=100+bonus+(G.timerVal*2);
+    G.score+=gained; G.totalScore+=gained;
+    G.streak++; G.bestStreak=Math.max(G.bestStreak,G.streak);
+    G.enemyHP=Math.max(0,G.enemyHP-50);
+    updateHPBars();
+    showFeedback(true,ch.w+(bonus?`<br>🔥 <strong>${G.streak}x STREAK! +${bonus} bonus!</strong>`:'')+`<br>⚡ +${gained} Power!`);
+    doAttackFX('💥');
+    spawnConfetti();
+    showPop(`+${gained} ⚡`,'var(--yellow)');
+    const nb=document.getElementById('nextBtn');
+    nb.textContent=G.enemyHP<=0?'💥 ENEMY DEFEATED → VICTORY!':'⚡ NEXT ATTACK!';
+    nb.style.display='block';
+  } else {
+    btn.classList.add('wrong');
+    m.choices.forEach((_,i)=>{if(m.choices[i].c)document.getElementById(`c${i}`).classList.add('correct');});
+    G.lives=Math.max(0,G.lives-1);
+    G.streak=0;
+    G.heroHP=Math.max(0,G.heroHP-30);
+    updateHPBars();
+    showFeedback(false,ch.w);
+    doAttackFX('⚡');
+    showPop('💔','var(--pink)');
+    const nb=document.getElementById('nextBtn');
+    nb.textContent=G.lives<=0?'💀 RETRY MISSION →':'😤 NEXT QUESTION';
+    nb.style.display='block';
+    if(G.lives<=0) setTimeout(()=>showGameOver(),1500);
+  }
+  updateHUD();
+}
+
+function showFeedback(good,msg){
+  const fb=document.getElementById('feedback');
+  if(!fb) return;
+  fb.className='feedback '+(good?'fb-good':'fb-bad');
+  fb.innerHTML=msg;
+}
+
+function updateHPBars(){
+  const hb=document.getElementById('heroHPBar');
+  const eb=document.getElementById('enemyHPBar');
+  if(hb) hb.style.width=G.heroHP+'%';
+  if(eb) eb.style.width=G.enemyHP+'%';
+}
+
+function updateHUD(){
+  const s=document.getElementById('gScore');
+  const l=document.getElementById('gLives');
+  const st=document.getElementById('gStreak');
+  const ef=document.getElementById('energyFill');
+  if(s) s.textContent=G.score+' ⚡';
+  if(l) l.textContent='❤️'.repeat(Math.max(0,G.lives))+'🖤'.repeat(Math.max(0,3-G.lives));
+  if(st) st.textContent=G.streak+'🔥';
+  if(ef) ef.style.width=(G.lives/3*100)+'%';
+}
+
+// ══ ATTACK FX ══
+function doAttackFX(em){
+  const el=document.getElementById('attackFx');
+  el.textContent=em;
+  el.classList.add('fire');
+  setTimeout(()=>el.classList.remove('fire'),700);
+}
+
+// ══ POP FX ══
+function showPop(txt,color){
+  const el=document.getElementById('popFx');
+  el.textContent=txt;
+  el.style.color=color;
+  el.className='pop-fx go';
+  setTimeout(()=>el.className='pop-fx',1500);
+}
+
+// ══ CONFETTI ══
+function spawnConfetti(){
+  const cols=['#ff2d78','#00f5ff','#ffe500','#39ff14','#ff7b00','#bf5fff','#ffffff'];
+  for(let i=0;i<35;i++){
+    const c=document.createElement('div');
+    c.className='confetti-p';
+    c.style.cssText=`left:${15+Math.random()*70}%;top:${20+Math.random()*40}%;
+      background:${cols[Math.floor(Math.random()*cols.length)]};
+      width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;
+      --tx:${-120+Math.random()*240}px;
+      border-radius:${Math.random()>.5?'50%':'2px'};
+      animation-delay:${Math.random()*.5}s;animation-duration:${1.2+Math.random()*.8}s;`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),2800);
+  }
+}
+
+// ══ DAMAGE ══
+function takeDamage(who,amt){
+  if(who==='hero') G.heroHP=Math.max(0,G.heroHP-amt);
+  else G.enemyHP=Math.max(0,G.enemyHP-amt);
+  updateHPBars();
+}
+
+// ══ MISSION COMPLETE / NEXT ══
+function missionComplete(){
+  if(G.lives<=0){retryLevel();return;}
+  const mIdx=G.currentMissionIdx;
+  const timeBonus=G.timerVal;
+  const starsEarned=G.lives===3?3:G.lives===2?2:1;
+  const old=G.starsPerLevel[mIdx]||0;
+  G.starsPerLevel[mIdx]=Math.max(old,starsEarned);
+  G.totalStars=Object.values(G.starsPerLevel).reduce((a,b)=>a+b,0);
+  // update world progress
+  const w=WORLDS[G.currentWorldId];
+  G.worldProgress[G.currentWorldId]=w.levels.filter(li=>(G.starsPerLevel[li]||0)>0).length;
+
+  showVictory(starsEarned,mIdx);
+}
+
+function showVictory(stars,mIdx){
+  stopTimer();
+  showScreen('victoryScreen');
+  const w=WORLDS[G.currentWorldId];
+  const isLast=mIdx===w.levels[w.levels.length-1];
+  const isFinalBoss=mIdx===19;
+
+  document.getElementById('vIcon').textContent=isFinalBoss?'🪐':isLast?'🏆':'⭐';
+  document.getElementById('vTitle').textContent=
+    isFinalBoss?'🪐 PLANET QUBIT SAVED!!!':
+    isLast?`🏆 ${w.name} CONQUERED!`:
+    '⚡ MISSION COMPLETE!';
+  document.getElementById('vStars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('vStory').innerHTML=
+    isFinalBoss?`<strong>YOU DID IT!</strong> MEGA-GLITCH has been DESTROYED! Planet Qubit is restored and the whole galaxy is throwing a party for YOU! 🎉🪐🎊`:
+    isLast?`World CLEARED! <strong>${w.enemyName}</strong> is defeated and flees into space! 🚀 Next world unlocked!`:
+    `GLITCH's puzzle SMASHED! Power Shard recovered! 💥`;
+  document.getElementById('vStats').innerHTML=`
+    <div class="stat-blob"><div class="stat-blob-v" style="color:var(--yellow)">${G.score}</div><div class="stat-blob-l">⚡ Power</div></div>
+    <div class="stat-blob"><div class="stat-blob-v">${'❤️'.repeat(G.lives)}</div><div class="stat-blob-l">Lives Left</div></div>
+    <div class="stat-blob"><div class="stat-blob-v" style="color:var(--orange)">${G.bestStreak}🔥</div><div class="stat-blob-l">Best Streak</div></div>
+    <div class="stat-blob"><div class="stat-blob-v" style="color:var(--green)">${G.timerVal}s</div><div class="stat-blob-l">Time Left</div></div>`;
+
+  const nb=document.querySelector('#victoryScreen .btn-row button');
+  if(isFinalBoss) nb.textContent='🎉 PLAY AGAIN';
+  spawnConfetti(); spawnConfetti();
+}
+
+function nextLevel(){
+  const w=WORLDS[G.currentWorldId];
+  const curLevelIndex=w.levels.indexOf(G.currentMissionIdx);
+  if(curLevelIndex<w.levels.length-1){
+    startMission(w.levels[curLevelIndex+1]);
+  } else {
+    goWorldMap();
+  }
+}
+
+function showGameOver(){
+  stopTimer();
+  showScreen('gameOverScreen');
+  document.getElementById('goStory').innerHTML=
+    `GLITCH got you this time — but every hero needs practice! You made it to <strong>Mission ${(G.currentMissionIdx%5)+1}</strong> with a best streak of <strong>${G.bestStreak}🔥</strong>. You've got this!`;
+}
+function retryLevel(){startMission(G.currentMissionIdx);}
+
+function restart(){
+  G={charIdx:G.charIdx,worldProgress:[0,0,0,0],starsPerLevel:{},
+    totalScore:0,totalStars:0,currentWorldId:0,currentMissionIdx:0,
+    lives:3,streak:0,score:0,answered:false,timerVal:30,timerInterval:null,
+    heroHP:100,enemyHP:100,bestStreak:0};
+  WORLDS.forEach((w,i)=>{if(i>0)w.locked=true;});
+  showTitle();
+}
+</script>
+</body>
+</html>
